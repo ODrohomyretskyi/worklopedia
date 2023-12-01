@@ -31,7 +31,6 @@ export class AuthController {
   async linkedinLogin() {}
 
   @Get('linkedin/callback')
-  @Redirect('http://localhost:4000', 200)
   async linkedinCallback(
     @ReqContext() ctx: RequestContext,
     @Query('code') code: string,
@@ -47,7 +46,7 @@ export class AuthController {
         await linkedInService.getUserInfo(accessToken);
 
       console.log(userInfo);
-      return this.authService.signIn(userInfo);
+      return this.authService.signIn(ctx, userInfo);
     } catch (error) {
       this.appLogger.error(ctx, error.response.data.message);
       throw new UnauthorizedException();

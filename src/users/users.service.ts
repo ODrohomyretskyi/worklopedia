@@ -18,17 +18,21 @@ export class UsersService {
   ) {}
 
   async create(createUserDto: CreateUserDto): Promise<User> {
-    const currentUser: User | null = await this.findOneByEmail(
-      createUserDto.email,
-    );
+    try {
+      const currentUser: User | null = await this.findOneByEmail(
+        createUserDto.email,
+      );
 
-    if (currentUser) {
-      throw new ConflictException(errorMessages.USER_ALREADY_EXISTS);
+      if (currentUser) {
+        throw new ConflictException(errorMessages.USER_ALREADY_EXISTS);
+      }
+
+      const newUser: User = { ...new User(), ...createUserDto };
+
+      return await this.userRepository.save(newUser);
+    } catch (e) {
+      console.log(e);
     }
-
-    const newUser: User = { ...new User(), ...createUserDto };
-
-    return await this.userRepository.save(newUser);
   }
 
   async findAll(): Promise<User[]> {
@@ -45,14 +49,18 @@ export class UsersService {
     return currentUser;
   }
 
-  async findOneByEmail(email: string): Promise<User> {
-    const currentUser: User = await this.userRepository.findOneBy({ email });
+  async findOneByEmail(email: string): Promise<User | null> {
+    try {
+      const currentUser: User = await this.userRepository.findOneBy({ email });
 
-    if (!currentUser) {
-      return null;
+      if (!currentUser) {
+        return null;
+      }
+
+      return currentUser;
+    } catch (e) {
+      console.log(e);
     }
-
-    return currentUser;
   }
 
   async update(id: string, updateUserDto: UpdateUserDto) {

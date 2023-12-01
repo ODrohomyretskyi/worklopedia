@@ -18,7 +18,7 @@ export class User {
   first_name: string;
 
   @Column()
-  second_name: string;
+  last_name: string;
 
   @Column()
   avatar: string;
