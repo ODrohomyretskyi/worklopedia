@@ -1,0 +1,17 @@
+export const errorMessages = {
+  USER_ALREADY_EXISTS: 'error.userAlreadyExists',
+  INCORRECT_CREDENTIALS: 'error.incorrectCredentials',
+  MSG_ALREADY_SENT: 'error.messageAlreadySent',
+  INVALID_SMS_CODE: 'error.invalidSMSCode',
+  USER_NOT_FOUND: 'error.userNotFound',
+  MOVIE_NOT_FOUND: 'error.movieNotFound',
+  SHOWTIME_NOT_FOUND: 'error.showtimeNotFound',
+  NOT_EXIST: 'error.notExist',
+  TOKEN_EXPIRED: 'error.tokenExpired',
+  WRONG_EMAIL: 'error.wrongEmail',
+  NOT_ORDERS: 'error.noOrders',
+  INCORRECT_ARRAY: 'error.order request must be an array',
+  EMPTY_ARRAY: 'error.empty array',
+  INCORRECT_REQUEST: 'error.Bad Request',
+  TOKEN_NOT_EXIST: 'error.Token not exist',
+};
