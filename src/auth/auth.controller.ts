@@ -1,8 +1,10 @@
 import {
+  Body,
   ConflictException,
   Controller,
   Get,
-  Param,
+  HttpCode,
+  Post,
   Query,
   UnauthorizedException,
   UseGuards,
@@ -10,15 +12,24 @@ import {
 import { AuthService } from './auth.service';
 import { AuthGuard } from '@nestjs/passport';
 import { ConfigService } from '@nestjs/config';
-import { linkedInService } from '../common/services/linkedin.service';
 import { ReqContext } from '../common/decorators/req-context.decorator';
 import { RequestContext } from '../common/dto/request-context.dto';
 import { AppLogger } from '../common/app-logger/app-logger.service';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
-import { ILinkedinProfile } from '../common/interfaces/linkedin.interface';
 import { ExtractUserId } from '../common/decorators/extract-user-id.decorator';
 import { SignInDto } from './dto/sign-in.dto';
+import {
+  ApiBearerAuth,
+  ApiNoContentResponse,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
+import { Public } from '../common/decorators/public.decorator';
+import { AuthRefreshTokensDto } from './dto/refresh-tokens.dto';
+import { TokensDto } from './dto/tokens.dto';
 
+@ApiTags('auth')
 @Controller('auth')
 export class AuthController {
   private appLogger = new AppLogger(AuthController.name);
@@ -26,12 +37,18 @@ export class AuthController {
     protected readonly authService: AuthService,
     protected readonly configService: ConfigService,
   ) {}
-
+  @ApiOperation({ summary: 'Sign-in/up with LinkedIn' })
+  @ApiNoContentResponse({ description: 'No content' })
   @Get('linkedin')
   @UseGuards(AuthGuard('linkedin'))
-  async linkedinLogin() {}
+  async linkedinLogin(): Promise<void> {}
 
+  @ApiOperation({ summary: 'LinkedIn callback' })
+  @ApiResponse({
+    description: 'The user successfully signed-up/in',
+  })
   @Get('linkedin/callback')
+  @Public()
   async linkedinCallback(
     @ReqContext() ctx: RequestContext,
     @Query('code') code: string,
@@ -52,7 +69,12 @@ export class AuthController {
     }
   }
 
-  @Get('logout/:id')
+  @ApiOperation({ summary: 'Logout' })
+  @ApiResponse({
+    description: 'The user successfully logged-out',
+  })
+  @ApiBearerAuth()
+  @Get('logout')
   @UseGuards(JwtAuthGuard)
   async logOut(
     @ReqContext() ctx: RequestContext,
@@ -65,5 +87,18 @@ export class AuthController {
       this.appLogger.error(ctx, errorText);
       throw new ConflictException(e);
     }
+  }
+
+  @ApiResponse({ description: 'Request for refresh your tokens' })
+  @Post('refresh')
+  @Public()
+  async refreshTokens(
+    @ReqContext() ctx: RequestContext,
+    @Body() refreshTokensBody: AuthRefreshTokensDto,
+  ): Promise<TokensDto> {
+    return await this.authService.refreshTokens(
+      ctx,
+      refreshTokensBody.refreshToken,
+    );
   }
 }

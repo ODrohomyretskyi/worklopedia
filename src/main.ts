@@ -17,6 +17,7 @@ async function bootstrap() {
     .setVersion(swaggerOptions.version)
     .addTag(swaggerOptions.tag)
     .build();
+
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);
 

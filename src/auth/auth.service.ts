@@ -1,4 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { UsersService } from '../users/users.service';
 import { ILinkedinProfile } from '../common/interfaces/linkedin.interface';
 import { ConfigService } from '@nestjs/config';
@@ -13,6 +17,8 @@ import { IJwtPayload, ITokens } from '../common/interfaces/auth.interface';
 import { User } from '../users/entities/user.entity';
 import { SignInDto } from './dto/sign-in.dto';
 import { linkedInService } from '../common/services/linkedin.service';
+import { errorMessages } from '../common/constants/errors';
+import { TokensDto } from './dto/tokens.dto';
 
 @Injectable()
 export class AuthService {
@@ -81,6 +87,35 @@ export class AuthService {
     };
   }
 
+  async refreshTokens(
+    ctx: RequestContext,
+    refreshToken: string,
+  ): Promise<TokensDto> {
+    this.appLogger.log(ctx, `${this.refreshTokens.name} was called`);
+
+    this.appLogger.debug(ctx, `calling ${JwtService.name}.verify`);
+    const decoded = this.jwtService.verify(refreshToken, {
+      secret: this.configService.get('APP_REFRESH_SECRET'),
+    });
+
+    if (!decoded) {
+      throw new BadRequestException(errorMessages.INCORRECT_REQUEST);
+    }
+
+    this.appLogger.debug(ctx, `calling ${UsersService.name}.findById`);
+    const currentUser = await this.userService.findOneById(decoded.id);
+
+    if (!currentUser) {
+      throw new NotFoundException(errorMessages.USER_NOT_FOUND);
+    }
+    await this.clearTokens(currentUser.id);
+
+    return this.generateTokens(currentUser, {
+      id: currentUser.id,
+      email: currentUser.email,
+    });
+  }
+
   public async clearTokens(userId: string): Promise<void> {
     const tokens = await this.tokenRepository.find({
       where: { user: { id: userId } },
@@ -98,8 +133,8 @@ export class AuthService {
   }
 
   //----Utils----
-  private async generateTokens(user: User, payload): Promise<ITokens> {
-    const tokens: ITokens = {
+  private async generateTokens(user: User, payload): Promise<TokensDto> {
+    const tokens: TokensDto = {
       accessToken: this.jwtService.sign(payload, {
         secret: this.configService.get<string>('APP_JWT_SECRET'),
         expiresIn: '1d',

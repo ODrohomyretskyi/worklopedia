@@ -3,7 +3,7 @@ export interface IJwtPayload {
   email: string;
 }
 
-export interface ITokens {
+export type ITokens = {
   accessToken: string;
   refreshToken: string;
-}
+};
