@@ -8,7 +8,7 @@ import { swaggerOptions } from './common/constants/swaggerOptions';
 
 async function bootstrap() {
   dotenv.config();
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, { cors: { origin: '*' } });
   const logger = new Logger(bootstrap.name);
 
   const config = new DocumentBuilder()

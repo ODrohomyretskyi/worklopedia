@@ -1,17 +1,15 @@
 import {
   Controller,
   Get,
-  Logger,
   Param,
   Query,
-  Redirect,
   UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthGuard } from '@nestjs/passport';
 import { ConfigService } from '@nestjs/config';
-import { linkedInService } from '../common/services/./linkedin.service';
+import { linkedInService } from '../common/services/linkedin.service';
 import { ReqContext } from '../common/decorators/req-context.decorator';
 import { RequestContext } from '../common/dto/request-context.dto';
 import { AppLogger } from '../common/app-logger/app-logger.service';
@@ -36,6 +34,8 @@ export class AuthController {
     @Query('code') code: string,
   ) {
     try {
+      console.log(code);
+
       const tokenResponse = await linkedInService.getAccessToken(code);
 
       if (!tokenResponse) throw new Error('token response not valid');
@@ -45,10 +45,9 @@ export class AuthController {
       const userInfo: ILinkedinProfile =
         await linkedInService.getUserInfo(accessToken);
 
-      console.log(userInfo);
-      return this.authService.signIn(ctx, userInfo);
+      return await this.authService.signIn(ctx, userInfo);
     } catch (error) {
-      this.appLogger.error(ctx, error.response.data.message);
+      this.appLogger.error(ctx, error.response.data.error);
       throw new UnauthorizedException();
     }
   }

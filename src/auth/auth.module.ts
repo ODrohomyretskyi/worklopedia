@@ -10,6 +10,7 @@ import { Tokens } from './entities/tokens.entity';
 import { UsersService } from '../users/users.service';
 import { User } from '../users/entities/user.entity';
 import { JwtService } from '@nestjs/jwt';
+import { JwtStrategy } from './strategies/jwt.strategy';
 
 @Module({
   imports: [
@@ -19,6 +20,12 @@ import { JwtService } from '@nestjs/jwt';
     TypeOrmModule.forFeature([Tokens, User]),
   ],
   controllers: [AuthController],
-  providers: [AuthService, LinkedinStrategy, UsersService, JwtService],
+  providers: [
+    AuthService,
+    LinkedinStrategy,
+    UsersService,
+    JwtStrategy,
+    JwtService,
+  ],
 })
 export class AuthModule {}

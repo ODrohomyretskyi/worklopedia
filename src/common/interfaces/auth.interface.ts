@@ -1,6 +1,6 @@
 export interface IJwtPayload {
-  userId: string;
-  sub?: any;
+  id: string;
+  email: string;
 }
 
 export interface ITokens {
