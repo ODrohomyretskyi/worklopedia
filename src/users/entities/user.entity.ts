@@ -20,11 +20,17 @@ export class User {
   @Column()
   last_name: string;
 
-  @Column()
+  @Column({ default: true })
+  status: boolean;
+
+  @Column({ nullable: true })
   avatar: string;
 
-  @Column()
+  @Column({ default: false })
   email_verified: boolean;
+
+  @Column({ nullable: true })
+  phone: string;
 
   @CreateDateColumn()
   createdAt: Date;

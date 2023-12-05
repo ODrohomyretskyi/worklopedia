@@ -22,7 +22,7 @@
     "migration:create": "npm run typeorm -- migration:create",
     "migration:start": "npm run build && npm run typeorm migration:run -- -d ./typeOrm.config.ts",
     "migration:revert": "npm run typeorm migration:revert -- -d ./typeOrm.config.ts",
-    "migration:drop": "npm run typeorm schema:drop -- -d ./typeOrm.config.ts",
+    "schema:drop": "npm run typeorm schema:drop -- -d ./typeOrm.config.ts",
     "migration:generate": "npm run build && npm run typeorm migration:generate -- -d ./typeOrm.config.ts"
   },
   "dependencies": {
