@@ -10,6 +10,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
 import { DeleteResult, Repository } from 'typeorm';
 import { errorMessages } from '../common/constants/errors';
+import { StatusResponseDto } from '../common/dto/status-response.dto';
 
 @Injectable()
 export class UsersService {
@@ -75,7 +76,7 @@ export class UsersService {
     return await this.userRepository.save(newUser);
   }
 
-  async remove(id: string) {
+  async remove(id: string): Promise<StatusResponseDto> {
     const deleteResult: DeleteResult = await this.userRepository.delete(id);
 
     if (deleteResult.affected === 0) {
