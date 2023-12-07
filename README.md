@@ -68,3 +68,12 @@ $ npm run migration:revert
 $ npm run schema:drop
 ```
 
+
+## Documentation Swagger/Postman
+
+In project we use Swagger and Postman for simple testing tasks.
+For open documentation, open this link in your browser (localy)
+### http://localhost:4000/api
+Remember need to select port which you set in your environment.
+
+Or click in the <a href="http://localhost:4000/api">Link</a>
