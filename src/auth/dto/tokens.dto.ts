@@ -6,9 +6,4 @@ export class TokensDto {
   @IsNotEmpty()
   @IsJWT()
   accessToken: string;
-
-  @ApiProperty({ name: 'refreshToken', type: String })
-  @IsNotEmpty()
-  @IsJWT()
-  refreshToken: string;
 }

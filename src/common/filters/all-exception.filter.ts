@@ -15,6 +15,7 @@ import { BaseApiException } from '../exceptions/base-api.exception';
 import { REQUEST_ID_TOKEN_HEADER } from '../constants';
 import { ConfigService } from '@nestjs/config';
 import { AppLogger } from '../app-logger/app-logger.service';
+import { FastifyReply, FastifyRequest } from 'fastify';
 
 @Catch()
 export class AllExceptionFilter implements ExceptionFilter {
@@ -24,8 +25,8 @@ export class AllExceptionFilter implements ExceptionFilter {
 
   catch(exception: HttpException, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
-    const req: Request = ctx.getRequest<Request>();
-    const res: Response = ctx.getResponse<Response>();
+    const req: FastifyRequest = ctx.getRequest<FastifyRequest>();
+    const res: FastifyReply<any> = ctx.getResponse<FastifyReply<any>>();
 
     const path = req.url;
     const timestamp = new Date().toDateString();
@@ -74,10 +75,6 @@ export class AllExceptionFilter implements ExceptionFilter {
       timestamp,
     };
 
-    // this.logger.error(error.message, JSON.stringify({ ...reqCtx }), {
-    //   error,
-    //   stack,
-    // });
     this.logger.error(reqCtx, error.message, {
       error,
       stack,
@@ -88,7 +85,7 @@ export class AllExceptionFilter implements ExceptionFilter {
       error.message = 'Internal server error';
     }
 
-    res.status(statusCode).json({ error });
+    res.status(statusCode).send({ error });
   }
 
   private getErrorData(exception: any) {
