@@ -1,7 +1,6 @@
 export class RequestContext {
-  public requestID: string;
-
-  public url: string;
-
-  public ip: string;
+  constructor(
+    public url: string,
+    public ip: string,
+  ) {}
 }

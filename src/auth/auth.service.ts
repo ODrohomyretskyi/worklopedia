@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Injectable,
   NotFoundException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { UsersService } from '../users/users.service';
 import { ILinkedinProfile } from '../common/interfaces/linkedin.interface';
@@ -19,6 +20,8 @@ import { SignInDto } from './dto/sign-in.dto';
 import { linkedInService } from '../common/services/linkedin.service';
 import { errorMessages } from '../common/constants/errors';
 import { TokensDto } from './dto/tokens.dto';
+import { FastifyReply } from 'fastify';
+import { decode } from 'jsonwebtoken';
 
 @Injectable()
 export class AuthService {
@@ -34,6 +37,7 @@ export class AuthService {
 
   public async signIn(
     ctx: RequestContext,
+    res: FastifyReply,
     {
       email,
       email_verified,
@@ -57,7 +61,11 @@ export class AuthService {
       };
 
       this.appLogger.debug(ctx, `calling generateTokens method`);
-      const tokens: ITokens = await this.generateTokens(currentUser, payload);
+      const tokens: TokensDto = await this.generateTokens(
+        res,
+        currentUser,
+        payload,
+      );
 
       return {
         user: currentUser,
@@ -79,7 +87,7 @@ export class AuthService {
     const payload: IJwtPayload = { id: newUser.id, email: newUser.email };
 
     this.appLogger.debug(ctx, `calling generateTokens method`);
-    const tokens: ITokens = await this.generateTokens(newUser, payload);
+    const tokens: TokensDto = await this.generateTokens(res, newUser, payload);
 
     return {
       user: newUser,
@@ -88,38 +96,49 @@ export class AuthService {
   }
 
   async refreshTokens(
+    res: FastifyReply,
     ctx: RequestContext,
     refreshToken: string,
   ): Promise<TokensDto> {
     this.appLogger.log(ctx, `${this.refreshTokens.name} was called`);
 
     this.appLogger.debug(ctx, `calling ${JwtService.name}.verify`);
-    const decoded = this.jwtService.verify(refreshToken, {
-      secret: this.configService.get('APP_REFRESH_SECRET'),
-    });
 
-    if (!decoded) {
-      throw new BadRequestException(errorMessages.INCORRECT_REQUEST);
+    try {
+      const decoded = this.jwtService.verify(refreshToken, {
+        secret: this.configService.get('APP_REFRESH_SECRET'),
+      });
+
+      this.appLogger.debug(ctx, `calling ${UsersService.name}.findById`);
+      const currentUser = await this.userService.findOneById(decoded.id);
+
+      if (!currentUser) {
+        throw new NotFoundException(errorMessages.USER_NOT_FOUND);
+      }
+      await this.clearTokens(currentUser.id);
+
+      return await this.generateTokens(
+        res,
+        currentUser,
+        {
+          id: currentUser.id,
+          email: currentUser.email,
+        },
+        refreshToken,
+      );
+    } catch (e) {
+      throw new UnauthorizedException(errorMessages.TOKEN_EXPIRED);
     }
-
-    this.appLogger.debug(ctx, `calling ${UsersService.name}.findById`);
-    const currentUser = await this.userService.findOneById(decoded.id);
-
-    if (!currentUser) {
-      throw new NotFoundException(errorMessages.USER_NOT_FOUND);
-    }
-    await this.clearTokens(currentUser.id);
-
-    return this.generateTokens(currentUser, {
-      id: currentUser.id,
-      email: currentUser.email,
-    });
   }
 
   public async clearTokens(userId: string): Promise<void> {
     const tokens = await this.tokenRepository.find({
       where: { user: { id: userId } },
     });
+
+    if (tokens.length === 0) {
+      return;
+    }
 
     await this.tokenRepository.remove(tokens);
   }
@@ -133,17 +152,37 @@ export class AuthService {
   }
 
   //----Utils----
-  private async generateTokens(user: User, payload): Promise<TokensDto> {
-    const tokens: TokensDto = {
+  private async generateTokens(
+    res: FastifyReply,
+    user: User,
+    payload: any,
+    refresh?: string,
+  ): Promise<TokensDto> {
+    const isRefreshValid = refresh
+      ? !!this.jwtService.verify(refresh, {
+          secret: this.configService.get('APP_REFRESH_SECRET'),
+        })
+      : false;
+
+    const tokens: ITokens = {
       accessToken: this.jwtService.sign(payload, {
         secret: this.configService.get<string>('APP_JWT_SECRET'),
         expiresIn: '1d',
       }),
-      refreshToken: this.jwtService.sign(payload, {
-        secret: this.configService.get<string>('APP_REFRESH_SECRET'),
-        expiresIn: '7d',
-      }),
+      refreshToken: isRefreshValid
+        ? refresh
+        : this.jwtService.sign(payload, {
+            secret: this.configService.get<string>('APP_REFRESH_SECRET'),
+            expiresIn: '7d',
+          }),
     };
+
+    if (!isRefreshValid) {
+      res.setCookie('refresh', tokens.refreshToken, {
+        secure: true,
+        httpOnly: true,
+      });
+    }
 
     await this.tokenRepository
       .save({
@@ -154,6 +193,6 @@ export class AuthService {
         throw new Error('Error durring tokens generate');
       });
 
-    return tokens;
+    return { accessToken: tokens.accessToken };
   }
 }

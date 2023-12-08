@@ -5,10 +5,19 @@ import { Logger, ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { swaggerOptions } from './common/constants/swaggerOptions';
+import * as cookieParser from 'cookie-parser';
+import {
+  FastifyAdapter,
+  NestFastifyApplication,
+} from '@nestjs/platform-fastify';
+import fastifyCookie from '@fastify/cookie';
 
 async function bootstrap() {
   dotenv.config();
-  const app = await NestFactory.create(AppModule, { cors: { origin: '*' } });
+  const app = await NestFactory.create<NestFastifyApplication>(
+    AppModule,
+    new FastifyAdapter(),
+  );
   const logger = new Logger(bootstrap.name);
 
   const config = new DocumentBuilder()
@@ -24,8 +33,12 @@ async function bootstrap() {
   const configService = app.get(ConfigService);
   const port = configService.get<number>('PORT');
 
+  await app.register(fastifyCookie, {
+    secret: configService.get('APP_REFRESH_SECRET'), // for cookies signature
+  });
   app.useGlobalPipes(new ValidationPipe());
   app.enableCors();
+  app.use(cookieParser());
 
   await app.listen(port);
   logger.log(`Application listening on port ${port}`);
