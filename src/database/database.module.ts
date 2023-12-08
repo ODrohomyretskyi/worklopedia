@@ -17,6 +17,14 @@ import { Tokens } from '../auth/entities/tokens.entity';
         synchronize: false,
         logging: configService.get<boolean>('TYPEORM_LOGGING'),
         entities: [User, Tokens],
+        // ssl:
+        //   configService.get<string>('APP_STATUS') === 'dev' ||
+        //   configService.get<string>('APP_STATUS') === 'prod',
+        // extra: {
+        //   ssl: {
+        //     rejectUnauthorized: false,
+        //   },
+        // },
       }),
       inject: [ConfigService],
     }),

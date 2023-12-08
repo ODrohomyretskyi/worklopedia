@@ -2,7 +2,6 @@ import { Module } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { PassportModule } from '@nestjs/passport';
-import { LinkedinStrategy } from './strategies/linkedin.strategy';
 import { HttpModule } from '@nestjs/axios';
 import { UsersModule } from '../users/users.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -20,12 +19,6 @@ import { JwtStrategy } from './strategies/jwt.strategy';
     TypeOrmModule.forFeature([Tokens, User]),
   ],
   controllers: [AuthController],
-  providers: [
-    AuthService,
-    LinkedinStrategy,
-    UsersService,
-    JwtStrategy,
-    JwtService,
-  ],
+  providers: [AuthService, UsersService, JwtStrategy, JwtService],
 })
 export class AuthModule {}

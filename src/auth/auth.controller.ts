@@ -9,7 +9,6 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { AuthGuard } from '@nestjs/passport';
 import { ConfigService } from '@nestjs/config';
 import { ReqContext } from '../common/decorators/req-context.decorator';
 import { RequestContext } from '../common/dto/request-context.dto';
@@ -32,6 +31,11 @@ import { FastifyReply } from 'fastify';
 @Controller('auth')
 export class AuthController {
   private appLogger = new AppLogger(AuthController.name);
+  private linkedInUri: string = `https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=${this.configService.get(
+    'LINKEDIN_CLIENT_ID',
+  )}&redirect_uri=${encodeURIComponent(
+    this.configService.get('LINKEDIN_CALLBACK_URL'),
+  )}&scope=profile%20email%20openid`;
   constructor(
     protected readonly authService: AuthService,
     protected readonly configService: ConfigService,
@@ -39,8 +43,9 @@ export class AuthController {
   @ApiOperation({ summary: 'Sign-in/up with LinkedIn' })
   @ApiNoContentResponse({ description: 'No content' })
   @Get('linkedin')
-  @UseGuards(AuthGuard('linkedin'))
-  async linkedinLogin(): Promise<void> {}
+  async linkedinLogin(@Res() res: FastifyReply): Promise<any> {
+    return res.redirect(302, this.linkedInUri);
+  }
 
   @ApiOperation({ summary: 'LinkedIn callback' })
   @ApiResponse({
