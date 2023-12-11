@@ -1,6 +1,5 @@
 import {
   ConflictException,
-  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -11,6 +10,7 @@ import { User } from './entities/user.entity';
 import { DeleteResult, Repository } from 'typeorm';
 import { errorMessages } from '../common/constants/errors';
 import { StatusResponseDto } from '../common/dto/status-response.dto';
+import { nanoid } from 'nanoid';
 
 @Injectable()
 export class UsersService {
@@ -28,7 +28,11 @@ export class UsersService {
         throw new ConflictException(errorMessages.USER_ALREADY_EXISTS);
       }
 
-      const newUser: User = { ...new User(), ...createUserDto };
+      const newUser: User = {
+        ...new User(),
+        ...createUserDto,
+        username: `Anonymous_${nanoid(6)}`,
+      };
 
       return await this.userRepository.save(newUser);
     } catch (e) {

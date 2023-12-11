@@ -92,6 +92,8 @@ export class AuthController {
         httpOnly: true,
         secure: true,
       });
+
+      return res.status(200).send();
     } catch (e) {
       const errorText = 'message' in e ? e.message : 'Something went wrong';
       this.appLogger.error(ctx, errorText);

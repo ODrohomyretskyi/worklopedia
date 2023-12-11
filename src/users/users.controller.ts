@@ -4,6 +4,7 @@ import {
   Delete,
   Get,
   Param,
+  ParseUUIDPipe,
   Patch,
   Post,
   UseGuards,
@@ -30,7 +31,7 @@ export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Post()
-  @ApiBearerAuth('bearer')
+  @ApiBearerAuth()
   @ApiBody({ type: CreateUserDto })
   @ApiOkResponse({ description: 'User successfully created.', type: User })
   async create(@Body() createUserDto: CreateUserDto): Promise<User> {
@@ -45,12 +46,12 @@ export class UsersController {
     return await this.usersService.findOneById(id);
   }
 
-  @Get(':id')
+  @Get('one/:id')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiParam({ name: 'id', required: true, type: String })
   @ApiOkResponse({ type: User })
-  async findOneById(@Param('id') id: string): Promise<User> {
+  async findOneById(@Param('id', ParseUUIDPipe) id: string): Promise<User> {
     return await this.usersService.findOneById(id);
   }
 
@@ -61,25 +62,41 @@ export class UsersController {
     return await this.usersService.findAll();
   }
 
-  @Patch('update')
+  @Patch()
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiBody({ type: UpdateUserDto })
   @ApiOkResponse({ type: User })
-  async update(
-    @ExtractUserId('id') id: string,
+  async updateUserByToken(
+    @ExtractUserId('id', ParseUUIDPipe) id: string,
     @Body() updateUserDto: UpdateUserDto,
   ): Promise<User> {
     return await this.usersService.update(id, updateUserDto);
   }
 
-  @Delete(':id')
+  @Patch('one/:id')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiBody({ type: UpdateUserDto })
+  @ApiOkResponse({ type: User })
+  async updateUserById(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() updateUserDto: UpdateUserDto,
+  ): Promise<User> {
+    return await this.usersService.update(id, updateUserDto);
+  }
+
+  @Delete('one/:id')
   @ApiParam({ name: 'id', required: true, type: String })
   @ApiOkResponse({
     description: 'User successfully deleted.',
     type: StatusResponseDto,
   })
-  async remove(@Param('id') id: string): Promise<StatusResponseDto> {
+  async remove(
+    @Param('id', ParseUUIDPipe) id: string,
+  ): Promise<StatusResponseDto> {
+    console.log(id);
+
     return await this.usersService.remove(id);
   }
 }
