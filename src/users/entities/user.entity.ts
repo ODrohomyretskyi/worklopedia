@@ -2,10 +2,15 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  JoinColumn,
+  ManyToMany,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
+import { Posts } from '../../posts/entities/posts.entity';
+import { Tags } from '../../tags/entities/tags.entity';
 
 @Entity('user')
 export class User {
@@ -51,6 +56,13 @@ export class User {
     required: false,
   })
   phone: string;
+
+  @OneToMany(() => Posts, (posts: Posts) => posts.author)
+  @JoinColumn()
+  posts: Posts[];
+
+  @ManyToMany(() => Tags, (tag: Tags) => tag.followers)
+  follow_tags: Tags[];
 
   @CreateDateColumn()
   @ApiProperty({
