@@ -1,4 +1,5 @@
 import {
+  Body,
   ConflictException,
   Controller,
   Get,
@@ -24,8 +25,8 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { Public } from '../common/decorators/public.decorator';
-import { Cookies } from './decorators/cookies.decorator';
 import { FastifyReply } from 'fastify';
+import { AuthRefreshTokensDto } from './dto/refresh-tokens.dto';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -55,13 +56,12 @@ export class AuthController {
   @Public()
   async linkedinCallback(
     @ReqContext() ctx: RequestContext,
-    @Res({ passthrough: true }) res: FastifyReply,
     @Query('code') code: string,
   ): Promise<SignInDto> {
     try {
       const userInfo = await this.authService.getLinkedInProfile(code);
 
-      return await this.authService.signIn(ctx, res, userInfo);
+      return await this.authService.signIn(ctx, userInfo);
     } catch (e) {
       const errorText = e?.response?.data?.error
         ? e.response.data.error
@@ -89,6 +89,7 @@ export class AuthController {
     try {
       await this.authService.clearTokens(id);
       res.clearCookie('refresh', {
+        httpOnly: true,
         secure: true,
       });
     } catch (e) {
@@ -102,9 +103,8 @@ export class AuthController {
   @Post('refresh')
   async refreshTokens(
     @ReqContext() ctx: RequestContext,
-    @Res({ passthrough: true }) res: FastifyReply,
-    @Cookies('refresh') refreshToken: string,
+    @Body() { refreshToken }: AuthRefreshTokensDto,
   ): Promise<any> {
-    return await this.authService.refreshTokens(res, ctx, refreshToken);
+    return await this.authService.refreshTokens(ctx, refreshToken);
   }
 }
