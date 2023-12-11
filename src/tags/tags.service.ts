@@ -42,6 +42,9 @@ export class TagsService {
         where: {
           id,
         },
+        relations: {
+          posts: true,
+        },
       })
       .catch(() => {
         throw new BadRequestException('Bad request');

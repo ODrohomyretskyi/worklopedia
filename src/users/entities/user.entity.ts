@@ -33,6 +33,9 @@ export class User {
   @ApiProperty({ example: 'Doe', description: 'Last name' })
   last_name: string;
 
+  @Column({ nullable: true })
+  username: string;
+
   @Column({ default: true })
   @ApiProperty({ example: true, description: 'Network status of the user' })
   status: boolean;

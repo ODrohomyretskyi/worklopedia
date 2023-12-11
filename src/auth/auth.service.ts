@@ -1,5 +1,4 @@
 import {
-  BadRequestException,
   Injectable,
   NotFoundException,
   UnauthorizedException,
@@ -20,8 +19,6 @@ import { SignInDto } from './dto/sign-in.dto';
 import { linkedInService } from '../common/services/linkedin.service';
 import { errorMessages } from '../common/constants/errors';
 import { TokensDto } from './dto/tokens.dto';
-import { FastifyReply } from 'fastify';
-import { decode } from 'jsonwebtoken';
 
 @Injectable()
 export class AuthService {
@@ -37,7 +34,6 @@ export class AuthService {
 
   public async signIn(
     ctx: RequestContext,
-    res: FastifyReply,
     {
       email,
       email_verified,
@@ -61,11 +57,7 @@ export class AuthService {
       };
 
       this.appLogger.debug(ctx, `calling generateTokens method`);
-      const tokens: TokensDto = await this.generateTokens(
-        res,
-        currentUser,
-        payload,
-      );
+      const tokens: TokensDto = await this.generateTokens(currentUser, payload);
 
       return {
         user: currentUser,
@@ -87,7 +79,7 @@ export class AuthService {
     const payload: IJwtPayload = { id: newUser.id, email: newUser.email };
 
     this.appLogger.debug(ctx, `calling generateTokens method`);
-    const tokens: TokensDto = await this.generateTokens(res, newUser, payload);
+    const tokens: TokensDto = await this.generateTokens(newUser, payload);
 
     return {
       user: newUser,
@@ -96,7 +88,6 @@ export class AuthService {
   }
 
   async refreshTokens(
-    res: FastifyReply,
     ctx: RequestContext,
     refreshToken: string,
   ): Promise<TokensDto> {
@@ -118,7 +109,6 @@ export class AuthService {
       await this.clearTokens(currentUser.id);
 
       return await this.generateTokens(
-        res,
         currentUser,
         {
           id: currentUser.id,
@@ -153,7 +143,6 @@ export class AuthService {
 
   //----Utils----
   private async generateTokens(
-    res: FastifyReply,
     user: User,
     payload: any,
     refresh?: string,
@@ -177,13 +166,6 @@ export class AuthService {
           }),
     };
 
-    if (!isRefreshValid) {
-      res.setCookie('refresh', tokens.refreshToken, {
-        secure: true,
-        httpOnly: true,
-      });
-    }
-
     await this.tokenRepository
       .save({
         user,
@@ -193,6 +175,6 @@ export class AuthService {
         throw new Error('Error durring tokens generate');
       });
 
-    return { accessToken: tokens.accessToken };
+    return tokens;
   }
 }

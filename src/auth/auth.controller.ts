@@ -1,4 +1,5 @@
 import {
+  Body,
   ConflictException,
   Controller,
   Get,
@@ -9,7 +10,6 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { AuthGuard } from '@nestjs/passport';
 import { ConfigService } from '@nestjs/config';
 import { ReqContext } from '../common/decorators/req-context.decorator';
 import { RequestContext } from '../common/dto/request-context.dto';
@@ -25,13 +25,18 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { Public } from '../common/decorators/public.decorator';
-import { Cookies } from './decorators/cookies.decorator';
 import { FastifyReply } from 'fastify';
+import { AuthRefreshTokensDto } from './dto/refresh-tokens.dto';
 
 @ApiTags('auth')
 @Controller('auth')
 export class AuthController {
   private appLogger = new AppLogger(AuthController.name);
+  private linkedInUri: string = `https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=${this.configService.get(
+    'LINKEDIN_CLIENT_ID',
+  )}&redirect_uri=${encodeURIComponent(
+    this.configService.get('LINKEDIN_CALLBACK_URL'),
+  )}&scope=profile%20email%20openid`;
   constructor(
     protected readonly authService: AuthService,
     protected readonly configService: ConfigService,
@@ -39,8 +44,9 @@ export class AuthController {
   @ApiOperation({ summary: 'Sign-in/up with LinkedIn' })
   @ApiNoContentResponse({ description: 'No content' })
   @Get('linkedin')
-  @UseGuards(AuthGuard('linkedin'))
-  async linkedinLogin(): Promise<void> {}
+  async linkedinLogin(@Res() res: FastifyReply): Promise<any> {
+    return res.redirect(302, this.linkedInUri);
+  }
 
   @ApiOperation({ summary: 'LinkedIn callback' })
   @ApiResponse({
@@ -50,13 +56,12 @@ export class AuthController {
   @Public()
   async linkedinCallback(
     @ReqContext() ctx: RequestContext,
-    @Res({ passthrough: true }) res: FastifyReply,
     @Query('code') code: string,
   ): Promise<SignInDto> {
     try {
       const userInfo = await this.authService.getLinkedInProfile(code);
 
-      return await this.authService.signIn(ctx, res, userInfo);
+      return await this.authService.signIn(ctx, userInfo);
     } catch (e) {
       const errorText = e?.response?.data?.error
         ? e.response.data.error
@@ -84,8 +89,11 @@ export class AuthController {
     try {
       await this.authService.clearTokens(id);
       res.clearCookie('refresh', {
+        httpOnly: true,
         secure: true,
       });
+
+      return res.status(200).send();
     } catch (e) {
       const errorText = 'message' in e ? e.message : 'Something went wrong';
       this.appLogger.error(ctx, errorText);
@@ -97,9 +105,8 @@ export class AuthController {
   @Post('refresh')
   async refreshTokens(
     @ReqContext() ctx: RequestContext,
-    @Res({ passthrough: true }) res: FastifyReply,
-    @Cookies('refresh') refreshToken: string,
+    @Body() { refreshToken }: AuthRefreshTokensDto,
   ): Promise<any> {
-    return await this.authService.refreshTokens(res, ctx, refreshToken);
+    return await this.authService.refreshTokens(ctx, refreshToken);
   }
 }

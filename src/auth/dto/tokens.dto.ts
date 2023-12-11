@@ -6,4 +6,9 @@ export class TokensDto {
   @IsNotEmpty()
   @IsJWT()
   accessToken: string;
+
+  @ApiProperty()
+  @IsNotEmpty()
+  @IsJWT()
+  refreshToken: string;
 }

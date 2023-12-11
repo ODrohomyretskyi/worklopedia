@@ -19,6 +19,7 @@ async function bootstrap() {
     AppModule,
     new FastifyAdapter(),
   );
+
   const logger = new Logger(bootstrap.name);
 
   const config = new DocumentBuilder()
