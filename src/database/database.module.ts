@@ -7,6 +7,9 @@ import { UserSetting } from '../users/entities/user-setting.entity';
 import { BlockList } from '../users/entities/block-list.entity';
 import { Posts } from '../posts/entities/posts.entity';
 import { Tags } from '../tags/entities/tags.entity';
+import { Chat } from '../chats/entities/chat.entity';
+import { Message } from '../chats/entities/message.entity';
+import { Conversation } from '../chats/entities/conversations.entity';
 
 @Module({
   imports: [
@@ -20,7 +23,17 @@ import { Tags } from '../tags/entities/tags.entity';
         password: configService.get<string>('TYPEORM_PASSWORD'),
         synchronize: false,
         logging: configService.get<boolean>('TYPEORM_LOGGING'),
-        entities: [User, Tokens, UserSetting, BlockList,Posts, Tags],
+        entities: [
+          User,
+          Tokens,
+          UserSetting,
+          BlockList,
+          Posts,
+          Tags,
+          Chat,
+          Message,
+          Conversation,
+        ],
         // ssl:
         //   configService.get<string>('APP_STATUS') === 'dev' ||
         //   configService.get<string>('APP_STATUS') === 'prod',
