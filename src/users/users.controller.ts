@@ -24,6 +24,9 @@ import {
 import { User } from './entities/user.entity';
 import { Public } from '../common/decorators/public.decorator';
 import { StatusResponseDto } from '../common/dto/status-response.dto';
+import { BlockList } from './entities/block-list.entity';
+import { UserSetting } from './entities/user-setting.entity';
+import { UpdateUserSettingsDto } from './dto/update-user-settings.dto';
 
 @ApiTags('users')
 @Controller('users')
@@ -68,10 +71,57 @@ export class UsersController {
   @ApiBody({ type: UpdateUserDto })
   @ApiOkResponse({ type: User })
   async updateUserByToken(
-    @ExtractUserId('id', ParseUUIDPipe) id: string,
+    @ExtractUserId(ParseUUIDPipe) id: string,
     @Body() updateUserDto: UpdateUserDto,
   ): Promise<User> {
     return await this.usersService.update(id, updateUserDto);
+  }
+
+  @Get('block-list')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  async getUserBlockList(@ExtractUserId() id: string): Promise<BlockList[]> {
+    return await this.usersService.getBlockList(id);
+  }
+
+  @Delete('block-list/:id')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  async removeFromBlockList(
+    @ExtractUserId(ParseUUIDPipe) id: string,
+    @Param('id', ParseUUIDPipe) blocked_user_id: string,
+  ): Promise<StatusResponseDto> {
+    return await this.usersService.removeFromBlockList(id, blocked_user_id);
+  }
+
+  @Get('settings')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  async getUserSettings(
+    @ExtractUserId(ParseUUIDPipe) id: string,
+  ): Promise<UserSetting> {
+    return await this.usersService.getUserSetting(id);
+  }
+
+  @Patch('settings')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  async updateUserSettings(
+    @ExtractUserId(ParseUUIDPipe) id: string,
+    @Body() updateSettingBody: UpdateUserSettingsDto,
+  ): Promise<UserSetting> {
+    return await this.usersService.updateUserSetting(id, updateSettingBody);
+  }
+
+  @Post('block-list/:id')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOkResponse({ type: BlockList })
+  async blockUser(
+    @ExtractUserId(ParseUUIDPipe) owner_id: string,
+    @Param('id', ParseUUIDPipe) blocked_user_id: string,
+  ): Promise<BlockList> {
+    return await this.usersService.blockUser(owner_id, blocked_user_id);
   }
 
   @Patch('one/:id')
@@ -95,8 +145,6 @@ export class UsersController {
   async remove(
     @Param('id', ParseUUIDPipe) id: string,
   ): Promise<StatusResponseDto> {
-    console.log(id);
-
     return await this.usersService.remove(id);
   }
 }

@@ -5,17 +5,23 @@ import {
 } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { InjectRepository } from '@nestjs/typeorm';
+import { InjectEntityManager, InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
-import { DeleteResult, Repository } from 'typeorm';
+import { DeleteResult, EntityManager, Repository } from 'typeorm';
 import { errorMessages } from '../common/constants/errors';
 import { StatusResponseDto } from '../common/dto/status-response.dto';
 import { nanoid } from 'nanoid';
+import { UserSetting } from './entities/user-setting.entity';
+import { BlockList } from './entities/block-list.entity';
+import { UpdateUserSettingsDto } from './dto/update-user-settings.dto';
 
 @Injectable()
 export class UsersService {
   constructor(
-    @InjectRepository(User) protected readonly userRepository: Repository<User>,
+    @InjectEntityManager()
+    protected readonly em: EntityManager,
+    @InjectRepository(User)
+    protected readonly userRepository: Repository<User>,
   ) {}
 
   async create(createUserDto: CreateUserDto): Promise<User> {
@@ -34,10 +40,29 @@ export class UsersService {
         username: `Anonymous_${nanoid(6)}`,
       };
 
-      return await this.userRepository.save(newUser);
+      const createdUser: User = await this.userRepository.save(newUser);
+
+      const userSettings: UserSetting = await this.em.save(UserSetting, {
+        ...new UserSetting(),
+        user: createdUser,
+        user_id: createdUser.id,
+      });
+
+      return await this.userRepository.save({
+        ...createdUser,
+        user_setting: userSettings,
+      });
     } catch (e) {
       console.log(e);
     }
+  }
+
+  async blockUser(owner_id: string, blocked_user_id: string) {
+    return await this.em.save(BlockList, {
+      ...new BlockList(),
+      blocked_user_id,
+      owner_id,
+    });
   }
 
   async findAll(): Promise<User[]> {
@@ -91,5 +116,71 @@ export class UsersService {
       message: `Successfully deleted user with id ${id}`,
       meta: deleteResult.raw,
     };
+  }
+
+  async getBlockList(userId: string): Promise<BlockList[]> {
+    return await this.em.find(BlockList, {
+      where: { owner_id: userId },
+    });
+  }
+
+  async removeFromBlockList(
+    id: string,
+    blocked_user_id: string,
+  ): Promise<StatusResponseDto> {
+    const blockEntity: BlockList = await this.em.findOneBy(BlockList, {
+      blocked_user_id,
+      owner_id: id,
+    });
+
+    if (!blockEntity) {
+      throw new NotFoundException(
+        `User with ID "${id}" or "${blocked_user_id}" not found`,
+      );
+    }
+
+    await this.em.remove(BlockList, blockEntity).catch((reason) => {
+      throw new ConflictException(reason, errorMessages.SOMETHING_WENT_WRONG);
+    });
+
+    return {
+      message: `Successfully deleted user with id ${blocked_user_id} from block-list`,
+      meta: {
+        isSuccessful: true,
+        updateDate: new Date(),
+      },
+    };
+  }
+
+  async getUserSetting(user_id: string): Promise<UserSetting> {
+    const currentSetting: UserSetting = await this.em.findOneBy(UserSetting, {
+      user_id: user_id,
+    });
+
+    if (!currentSetting) {
+      throw new NotFoundException(
+        `Settings for User with ID "${user_id}" not found`,
+      );
+    }
+
+    return currentSetting;
+  }
+
+  async updateUserSetting(
+    id: string,
+    updateSettingBody: UpdateUserSettingsDto,
+  ): Promise<UserSetting> {
+    const currentSetting: UserSetting = await this.getUserSetting(id);
+
+    const newSetting: UserSetting = {
+      ...currentSetting,
+      ...updateSettingBody,
+    };
+
+    try {
+      return await this.em.save(UserSetting, newSetting);
+    } catch (e) {
+      throw new ConflictException(errorMessages.SOMETHING_WENT_WRONG);
+    }
   }
 }
