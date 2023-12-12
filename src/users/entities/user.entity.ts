@@ -11,6 +11,7 @@ import {
 import { ApiProperty } from '@nestjs/swagger';
 import { Posts } from '../../posts/entities/posts.entity';
 import { Tags } from '../../tags/entities/tags.entity';
+import { Comments } from '../../comments/entities/comments.entity';
 
 @Entity('user')
 export class User {
@@ -63,6 +64,10 @@ export class User {
   @OneToMany(() => Posts, (posts: Posts) => posts.author)
   @JoinColumn()
   posts: Posts[];
+
+  @OneToMany(() => Comments, (comment: Comments) => comment.author)
+  @JoinColumn()
+  comments: Comments[];
 
   @ManyToMany(() => Tags, (tag: Tags) => tag.followers)
   follow_tags: Tags[];
