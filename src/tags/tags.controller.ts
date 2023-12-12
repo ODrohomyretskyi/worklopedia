@@ -43,6 +43,24 @@ export class TagsController {
     return await this.tagsService.findOneById(id, userId);
   }
 
+  @Get('/follow')
+  @UseGuards(JwtAuthGuard)
+  async getFollow(@ExtractUserId('id') userId: string): Promise<Tags[]> {
+    return await this.tagsService.getFollow(userId);
+  }
+
+  @Get('/popular')
+  @UseGuards(JwtAuthGuard)
+  async getPopular(@Query('search') searchStr: string): Promise<Tags[]> {
+    return await this.tagsService.getPopular(searchStr);
+  }
+
+  @Get('/trends')
+  @UseGuards(JwtAuthGuard)
+  async getTrends(): Promise<Tags[]> {
+    return await this.tagsService.getTrends();
+  }
+
   @Post()
   @UseGuards(JwtAuthGuard)
   async create(@Body() createTagDto: CreateTagDto): Promise<Tags> {

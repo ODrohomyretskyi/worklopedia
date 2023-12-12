@@ -36,6 +36,41 @@ export class TagsService {
     return (await this.buildTagResponse(tags, userId)) as TagResponceDto[];
   }
 
+  async getFollow(userId: string): Promise<Tags[]> {
+    const user: User = await this.userRepository.findOne({
+      where: {
+        id: userId,
+      },
+      relations: {
+        follow_tags: true,
+      },
+    });
+
+    if (!user) {
+      throw new NotFoundException(errorMessages.USER_NOT_FOUND);
+    }
+
+    return user.follow_tags;
+  }
+
+  async getPopular(searchStr: string): Promise<Tags[]> {
+    const queryBuilder = this.tagsRepository.createQueryBuilder('tags');
+    if (searchStr) {
+      queryBuilder.where('LOWER(tags.name) LIKE LOWER(:query)', {
+        query: `%${searchStr.toLowerCase()}%`,
+      });
+    }
+
+    return queryBuilder.orderBy('tags.followers_count', 'DESC').getMany();
+  }
+
+  async getTrends(): Promise<Tags[]> {
+    return this.tagsRepository
+      .createQueryBuilder('tags')
+      .orderBy('tags.post_count', 'DESC')
+      .getMany();
+  }
+
   async findOneById(id: string, userId: string): Promise<TagResponceDto> {
     const tag: Tags | null = await this.tagsRepository
       .findOne({
