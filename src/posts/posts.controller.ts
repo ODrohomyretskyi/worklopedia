@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { AppLogger } from '../common/app-logger/app-logger.service';
 import { PostsService } from './posts.service';
 import { Posts } from './entities/posts.entity';
@@ -14,8 +22,8 @@ export class PostsController {
 
   @Get()
   @UseGuards(JwtAuthGuard)
-  async getAll(): Promise<Posts[]> {
-    return await this.postsService.findAll();
+  async getAll(@Query('tagId') tagId: string): Promise<Posts[]> {
+    return await this.postsService.findAll(tagId);
   }
 
   @Get('/:id')

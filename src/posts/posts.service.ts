@@ -31,6 +31,7 @@ export class PostsService {
       },
     },
   };
+
   constructor(
     @InjectRepository(Posts)
     protected readonly postsRepository: Repository<Posts>,
@@ -40,11 +41,30 @@ export class PostsService {
     protected readonly userRepository: Repository<User>,
   ) {}
 
-  async findAll(): Promise<Posts[]> {
-    return await this.postsRepository.find({
-      relations: { tag: true, author: true },
-      ...this.generateSelectForPostResponse,
-    });
+  async findAll(tagId: string): Promise<Posts[]> {
+    const queryBuilder = this.postsRepository
+      .createQueryBuilder('post')
+      .leftJoin('post.tag', 'tag')
+      .leftJoin('post.author', 'author')
+      .addSelect([
+        'tag.id',
+        'tag.name',
+        'tag.icon',
+        'tag.bg_color',
+        'tag.tooltip',
+      ])
+      .addSelect([
+        'author.id',
+        'author.first_name',
+        'author.last_name',
+        'author.avatar',
+      ]);
+
+    if (tagId) {
+      queryBuilder.where('tag.id = :tagId', { tagId });
+    }
+
+    return queryBuilder.getMany();
   }
 
   async getOne(id: string): Promise<Posts> {
@@ -75,7 +95,7 @@ export class PostsService {
       this.userRepository
         .findOne({
           where: { id },
-          relations: { posts: false },
+          relations: { posts: true },
           select: {
             id: true,
             first_name: true,
@@ -108,7 +128,7 @@ export class PostsService {
       author: user,
     });
 
-    user.posts = [...(user.posts || []), newPost];
+    user.posts = [...user.posts, newPost];
 
     await this.userRepository.save(user);
     return await this.postsRepository.save(newPost);
