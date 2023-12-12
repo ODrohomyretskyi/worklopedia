@@ -2,10 +2,13 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  JoinColumn,
+  OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
+import { UserSetting } from './user-setting.entity';
 
 @Entity('user')
 export class User {
@@ -54,6 +57,10 @@ export class User {
     required: false,
   })
   phone: string;
+
+  @OneToOne(() => UserSetting, (user_setting) => user_setting.user)
+  @JoinColumn()
+  user_setting: UserSetting;
 
   @CreateDateColumn()
   @ApiProperty({

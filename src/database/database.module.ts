@@ -3,6 +3,8 @@ import { ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from '../users/entities/user.entity';
 import { Tokens } from '../auth/entities/tokens.entity';
+import { UserSetting } from '../users/entities/user-setting.entity';
+import { BlockList } from '../users/entities/block-list.entity';
 
 @Module({
   imports: [
@@ -16,7 +18,7 @@ import { Tokens } from '../auth/entities/tokens.entity';
         password: configService.get<string>('TYPEORM_PASSWORD'),
         synchronize: false,
         logging: configService.get<boolean>('TYPEORM_LOGGING'),
-        entities: [User, Tokens],
+        entities: [User, Tokens, UserSetting, BlockList],
         // ssl:
         //   configService.get<string>('APP_STATUS') === 'dev' ||
         //   configService.get<string>('APP_STATUS') === 'prod',
