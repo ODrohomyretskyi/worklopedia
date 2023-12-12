@@ -1,6 +1,7 @@
 import {
   ConflictException,
   Injectable,
+  InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -25,21 +26,21 @@ export class UsersService {
   ) {}
 
   async create(createUserDto: CreateUserDto): Promise<User> {
+    const currentUser: User | null = await this.findOneByEmail(
+      createUserDto.email,
+    );
+
+    if (currentUser) {
+      throw new ConflictException(errorMessages.USER_ALREADY_EXISTS);
+    }
+
+    const newUser: User = {
+      ...new User(),
+      ...createUserDto,
+      username: `Anonymous_${nanoid(6)}`,
+    };
+
     try {
-      const currentUser: User | null = await this.findOneByEmail(
-        createUserDto.email,
-      );
-
-      if (currentUser) {
-        throw new ConflictException(errorMessages.USER_ALREADY_EXISTS);
-      }
-
-      const newUser: User = {
-        ...new User(),
-        ...createUserDto,
-        username: `Anonymous_${nanoid(6)}`,
-      };
-
       const createdUser: User = await this.userRepository.save(newUser);
 
       const userSettings: UserSetting = await this.em.save(UserSetting, {
@@ -48,12 +49,17 @@ export class UsersService {
         user_id: createdUser.id,
       });
 
+      delete userSettings.user;
+
       return await this.userRepository.save({
         ...createdUser,
         user_setting: userSettings,
       });
     } catch (e) {
-      console.log(e);
+      throw new InternalServerErrorException(
+        errorMessages.SOMETHING_WENT_WRONG,
+        e,
+      );
     }
   }
 
