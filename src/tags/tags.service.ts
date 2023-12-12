@@ -53,7 +53,10 @@ export class TagsService {
     return user.follow_tags;
   }
 
-  async getPopular(searchStr: string): Promise<Tags[]> {
+  async getPopular(
+    searchStr: string,
+    userId: string,
+  ): Promise<TagResponceDto[]> {
     const queryBuilder = this.tagsRepository.createQueryBuilder('tags');
     if (searchStr) {
       queryBuilder.where('LOWER(tags.name) LIKE LOWER(:query)', {
@@ -61,7 +64,11 @@ export class TagsService {
       });
     }
 
-    return queryBuilder.orderBy('tags.followers_count', 'DESC').getMany();
+    const tags = await queryBuilder
+      .orderBy('tags.followers_count', 'DESC')
+      .getMany();
+
+    return (await this.buildTagResponse(tags, userId)) as TagResponceDto[];
   }
 
   async getTrends(): Promise<Tags[]> {

@@ -51,8 +51,11 @@ export class TagsController {
 
   @Get('/popular')
   @UseGuards(JwtAuthGuard)
-  async getPopular(@Query('search') searchStr: string): Promise<Tags[]> {
-    return await this.tagsService.getPopular(searchStr);
+  async getPopular(
+    @Query('search') searchStr: string,
+    @ExtractUserId('id') userId: string,
+  ): Promise<Tags[]> {
+    return await this.tagsService.getPopular(searchStr, userId);
   }
 
   @Get('/trends')
