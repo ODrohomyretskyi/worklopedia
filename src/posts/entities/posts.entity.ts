@@ -29,16 +29,16 @@ export class Posts {
   @JoinColumn()
   tag: Tags;
 
-  @Column({ nullable: true })
+  @Column({ default: 0 })
   like_count: number;
 
-  @Column({ nullable: true })
+  @Column({ default: 0 })
   views_count: number;
 
-  @Column({ nullable: true })
+  @Column({ default: 0 })
   bookmarks_count: number;
 
-  @Column({ nullable: true })
+  @Column({ default: 0 })
   comments_count: number;
 
   @CreateDateColumn()
