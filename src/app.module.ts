@@ -5,6 +5,8 @@ import { AuthModule } from './auth/auth.module';
 import { HttpModule } from '@nestjs/axios';
 import { UsersModule } from './users/users.module';
 import { DatabaseModule } from './database/database.module';
+import { TagsModule } from './tags/tags.module';
+import { PostsModule } from './posts/posts.module';
 
 @Module({
   imports: [
@@ -14,6 +16,8 @@ import { DatabaseModule } from './database/database.module';
     UsersModule,
     AuthModule,
     HttpModule,
+    TagsModule,
+    PostsModule,
   ],
   controllers: [],
   providers: [],

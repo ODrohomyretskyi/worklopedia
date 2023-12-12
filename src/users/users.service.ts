@@ -72,11 +72,21 @@ export class UsersService {
   }
 
   async findAll(): Promise<User[]> {
-    return await this.userRepository.find();
+    return await this.userRepository.find({ relations: { posts: true } });
   }
 
   async findOneById(id: string): Promise<User> {
-    const currentUser: User = await this.userRepository.findOneBy({ id });
+    const currentUser: User | void = await this.userRepository.findOne({
+      where: {
+        id,
+      },
+      relations: {
+        follow_tags: true,
+        posts: {
+          tag: true,
+        },
+      },
+    });
 
     if (!currentUser) {
       return null;

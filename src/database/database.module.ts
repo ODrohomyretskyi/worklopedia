@@ -5,6 +5,8 @@ import { User } from '../users/entities/user.entity';
 import { Tokens } from '../auth/entities/tokens.entity';
 import { UserSetting } from '../users/entities/user-setting.entity';
 import { BlockList } from '../users/entities/block-list.entity';
+import { Posts } from '../posts/entities/posts.entity';
+import { Tags } from '../tags/entities/tags.entity';
 
 @Module({
   imports: [
@@ -18,7 +20,7 @@ import { BlockList } from '../users/entities/block-list.entity';
         password: configService.get<string>('TYPEORM_PASSWORD'),
         synchronize: false,
         logging: configService.get<boolean>('TYPEORM_LOGGING'),
-        entities: [User, Tokens, UserSetting, BlockList],
+        entities: [User, Tokens, UserSetting, BlockList,Posts, Tags],
         // ssl:
         //   configService.get<string>('APP_STATUS') === 'dev' ||
         //   configService.get<string>('APP_STATUS') === 'prod',
