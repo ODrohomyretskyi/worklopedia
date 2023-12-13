@@ -74,6 +74,11 @@ export class CommentsService {
       },
       relations: { author: true },
       select: {
+        id: true,
+        content: true,
+        like_count: true,
+        entity_id: true,
+        reply_id: true,
         author: {
           id: true,
           first_name: true,
@@ -83,6 +88,26 @@ export class CommentsService {
       },
     });
 
-    return comments;
+    return await this.buildCommentsResponse(comments);
+  }
+
+  async buildCommentsResponse(comments: Comments[]): Promise<any> {
+    const repliesMap = new Map<string, Comments[]>();
+
+    comments.forEach((comment) => {
+      if (comment.reply_id != null) {
+        if (!repliesMap.has(comment.reply_id)) {
+          repliesMap.set(comment.reply_id, []);
+        }
+        repliesMap.get(comment.reply_id)?.push(comment);
+      }
+    });
+
+    return comments
+      .filter((comment) => comment.reply_id == null)
+      .map((comment) => ({
+        ...comment,
+        replied_comments: repliesMap.get(comment.id) || [],
+      }));
   }
 }

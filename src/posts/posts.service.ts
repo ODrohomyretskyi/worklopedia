@@ -131,6 +131,7 @@ export class PostsService {
     user.posts = [...user.posts, newPost];
 
     await this.userRepository.save(user);
+    delete newPost.author.posts;
     return await this.postsRepository.save(newPost);
   }
 }

@@ -8,7 +8,7 @@ import { ExtractUserId } from '../common/decorators/extract-user-id.decorator';
 @Controller('comments')
 export class CommentsController {
   constructor(private readonly commentsService: CommentsService) {}
-  @Get('')
+  @Get()
   @UseGuards(JwtAuthGuard)
   async getAll(): Promise<Comments[]> {
     return await this.commentsService.getAll();
