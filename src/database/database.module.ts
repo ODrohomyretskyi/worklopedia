@@ -7,6 +7,7 @@ import { UserSetting } from '../users/entities/user-setting.entity';
 import { BlockList } from '../users/entities/block-list.entity';
 import { Posts } from '../posts/entities/posts.entity';
 import { Tags } from '../tags/entities/tags.entity';
+import { Comments } from '../comments/entities/comments.entity';
 
 @Module({
   imports: [
@@ -20,7 +21,7 @@ import { Tags } from '../tags/entities/tags.entity';
         password: configService.get<string>('TYPEORM_PASSWORD'),
         synchronize: false,
         logging: configService.get<boolean>('TYPEORM_LOGGING'),
-        entities: [User, Tokens, UserSetting, BlockList,Posts, Tags],
+        entities: [User, Tokens, UserSetting, BlockList,Posts, Tags, Comments],
         // ssl:
         //   configService.get<string>('APP_STATUS') === 'dev' ||
         //   configService.get<string>('APP_STATUS') === 'prod',
