@@ -3,11 +3,12 @@ import {
   CreateDateColumn,
   Entity,
   JoinColumn,
+  ManyToMany,
   OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { Message } from './message.entity';
-import { Conversation } from './conversations.entity';
+import { User } from '../../users/entities/user.entity';
 
 @Entity('chat')
 export class Chat {
@@ -27,9 +28,8 @@ export class Chat {
   @JoinColumn()
   messages: Message[];
 
-  @OneToMany(() => Conversation, (Conversation) => Conversation.chat)
-  @JoinColumn()
-  conversators: Conversation[];
+  @ManyToMany(() => User, (user) => user.chats)
+  conversators: User[];
 
   @CreateDateColumn()
   createdAt: Date;

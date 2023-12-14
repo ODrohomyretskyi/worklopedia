@@ -6,23 +6,34 @@ import {
   Param,
   Patch,
   Post,
+  UseGuards,
 } from '@nestjs/common';
 import { ChatsService } from './chats.service';
 import { CreateChatDto } from './dto/create-chat.dto';
 import { UpdateChatDto } from './dto/update-chat.dto';
+import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
+import { ApiBearerAuth } from '@nestjs/swagger';
+import { ExtractUserId } from '../common/decorators/extract-user-id.decorator';
 
 @Controller('chats')
 export class ChatsController {
   constructor(private readonly chatsService: ChatsService) {}
 
   @Post()
-  create(@Body() createChatDto: CreateChatDto) {
-    return this.chatsService.create(createChatDto);
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  async create(
+    @ExtractUserId() id: string,
+    @Body() { conversator_id }: CreateChatDto,
+  ): Promise<any> {
+    return await this.chatsService.create(id, conversator_id);
   }
 
   @Get()
-  findAll() {
-    return this.chatsService.findAll();
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  async getAllUsersChat(@ExtractUserId() id: string) {
+    return await this.chatsService.getAllUsersChat(id);
   }
 
   @Get(':id')
