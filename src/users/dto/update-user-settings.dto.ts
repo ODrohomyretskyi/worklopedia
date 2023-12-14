@@ -5,7 +5,7 @@ export class UpdateUserSettingsDto {
   @ApiProperty({ nullable: true, type: Boolean })
   @IsOptional()
   @IsBoolean()
-  post_notif_on: boolean;
+  posting_and_commenting_notif_on: boolean;
 
   @ApiProperty({ nullable: true, type: Boolean })
   @IsOptional()
@@ -30,30 +30,25 @@ export class UpdateUserSettingsDto {
   @ApiProperty({ nullable: true, type: Boolean })
   @IsOptional()
   @IsBoolean()
-  search_privacy_on: boolean;
+  search_history_privacy_on: boolean;
 
   @ApiProperty({ nullable: true, type: Boolean })
   @IsOptional()
   @IsBoolean()
-  messages_privacy_on: boolean;
+  messages_allow_privacy_on: boolean;
 
   @ApiProperty({ nullable: true, type: Boolean })
   @IsOptional()
   @IsBoolean()
-  indicators_privacy_on: boolean;
+  indicators_privacy_privacy_on: boolean;
 
   @ApiProperty({ nullable: true, type: Boolean })
   @IsOptional()
   @IsBoolean()
-  message_nudges_on: boolean;
+  message_nudges_privacy_on: boolean;
 
   @ApiProperty({ nullable: true, type: Boolean })
   @IsOptional()
   @IsBoolean()
-  content_validation_on: boolean;
-
-  @ApiProperty({ nullable: true, type: Boolean })
-  @IsOptional()
-  @IsBoolean()
-  dark_mode_on: boolean;
+  content_validation_privacy_on: boolean;
 }
