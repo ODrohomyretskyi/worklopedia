@@ -13,7 +13,7 @@ export class UserSetting {
   user: User;
 
   @Column({ default: false })
-  post_notif_on: boolean;
+  posting_and_commenting_notif_on: boolean;
 
   @Column({ default: false })
   messaging_notif_on: boolean;
@@ -28,20 +28,17 @@ export class UserSetting {
   verifications_notif_on: boolean;
 
   @Column({ default: false })
-  search_privacy_on: boolean;
+  search_history_privacy_on: boolean;
 
   @Column({ default: false })
-  messages_privacy_on: boolean;
+  messages_allow_privacy_on: boolean;
 
   @Column({ default: false })
-  indicators_privacy_on: boolean;
+  indicators_privacy_privacy_on: boolean;
 
   @Column({ default: false })
-  message_nudges_on: boolean;
+  message_nudges_privacy_on: boolean;
 
   @Column({ default: false })
-  content_validation_on: boolean;
-
-  @Column({ default: false })
-  dark_mode_on: boolean;
+  content_validation_privacy_on: boolean;
 }
