@@ -7,39 +7,32 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { Tags } from '../../tags/entities/tags.entity';
 import { User } from '../../users/entities/user.entity';
+import { EntityType } from '../types/entity-type.enum';
 
-@Entity('posts')
-export class Posts {
+@Entity('comment')
+export class Comments {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
   @Column()
   content: string;
 
-  @ManyToOne(() => User, (user: User) => user.posts)
+  @ManyToOne(() => User, (user: User) => user.comments)
   @JoinColumn()
   author: User;
-
-  @ManyToOne(() => Tags, (tag: Tags) => tag.posts, {
-    cascade: true,
-    onDelete: 'CASCADE',
-  })
-  @JoinColumn()
-  tag: Tags;
 
   @Column({ default: 0 })
   like_count: number;
 
-  @Column({ default: 0 })
-  views_count: number;
+  @Column({ nullable: true })
+  reply_id: string;
 
-  @Column({ default: 0 })
-  bookmarks_count: number;
+  @Column()
+  entity_id: string;
 
-  @Column({ default: 0 })
-  comments_count: number;
+  @Column({ enum: EntityType })
+  entity_type: EntityType;
 
   @CreateDateColumn()
   createdAt: Date;

@@ -9,7 +9,7 @@ import { Posts } from '../posts/entities/posts.entity';
 import { Tags } from '../tags/entities/tags.entity';
 import { Chat } from '../chats/entities/chat.entity';
 import { Message } from '../chats/entities/message.entity';
-import { Conversation } from '../chats/entities/conversations.entity';
+import { Comments } from '../comments/entities/comments.entity';
 
 @Module({
   imports: [
@@ -32,7 +32,7 @@ import { Conversation } from '../chats/entities/conversations.entity';
           Tags,
           Chat,
           Message,
-          Conversation,
+          Comments
         ],
         // ssl:
         //   configService.get<string>('APP_STATUS') === 'dev' ||

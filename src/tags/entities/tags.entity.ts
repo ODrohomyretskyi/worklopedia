@@ -26,7 +26,7 @@ export class Tags {
   @Column({ default: 0 })
   post_count: number;
 
-  @Column({ default: 0 })
+  @Column({ nullable: true })
   tooltip: string;
 
   @Column()

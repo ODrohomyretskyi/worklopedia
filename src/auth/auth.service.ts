@@ -94,18 +94,18 @@ export class AuthService {
     this.appLogger.log(ctx, `${this.refreshTokens.name} was called`);
 
     this.appLogger.debug(ctx, `calling ${JwtService.name}.verify`);
+    const decoded = this.jwtService.verify(refreshToken, {
+      secret: this.configService.get('APP_REFRESH_SECRET'),
+    });
+
+    this.appLogger.debug(ctx, `calling ${UsersService.name}.findById`);
+    const currentUser = await this.userService.findOneById(decoded.id);
+
+    if (!currentUser) {
+      throw new NotFoundException(errorMessages.USER_NOT_FOUND);
+    }
 
     try {
-      const decoded = this.jwtService.verify(refreshToken, {
-        secret: this.configService.get('APP_REFRESH_SECRET'),
-      });
-
-      this.appLogger.debug(ctx, `calling ${UsersService.name}.findById`);
-      const currentUser = await this.userService.findOneById(decoded.id);
-
-      if (!currentUser) {
-        throw new NotFoundException(errorMessages.USER_NOT_FOUND);
-      }
       await this.clearTokens(currentUser.id);
 
       return await this.generateTokens(

@@ -13,7 +13,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Posts } from '../../posts/entities/posts.entity';
 import { Tags } from '../../tags/entities/tags.entity';
 import { UserSetting } from './user-setting.entity';
-import { Conversation } from '../../chats/entities/conversations.entity';
+import { Comments } from '../../comments/entities/comments.entity';
 
 @Entity('user')
 export class User {
@@ -71,12 +71,12 @@ export class User {
   @JoinColumn()
   posts: Posts[];
 
+  @OneToMany(() => Comments, (comment: Comments) => comment.author)
+  @JoinColumn()
+  comments: Comments[];
+
   @ManyToMany(() => Tags, (tag: Tags) => tag.followers)
   follow_tags: Tags[];
-
-  @OneToMany(() => Conversation, (conversation) => conversation.user)
-  @JoinColumn()
-  conversations: Conversation[];
 
   @CreateDateColumn()
   @ApiProperty({
