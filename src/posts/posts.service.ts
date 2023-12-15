@@ -58,6 +58,7 @@ export class PostsService {
         'author.first_name',
         'author.last_name',
         'author.avatar',
+        'author.username',
       ]);
 
     if (tagId) {
@@ -127,24 +128,32 @@ export class PostsService {
     const isLiked = hasActivity(PostActivitiesActions.LIKE);
     const isBookmarked = hasActivity(PostActivitiesActions.BOOKMARK);
 
-    if (
-      body.type === PostActivitiesActions.LIKE ||
-      body.type === PostActivitiesActions.BOOKMARK
-    ) {
-      const existingActivity = activities.find((el) => el.action === body.type);
+    const existingActivity = activities.find((el) => el.action === body.type);
 
-      if (existingActivity) {
-        await this.em.delete(PostActivities, existingActivity);
+    if (existingActivity) {
+      await this.em.delete(PostActivities, existingActivity);
+      if (body.type === PostActivitiesActions.LIKE) {
+        post.like_count = post.like_count === 0 ? 0 : post.like_count - 1;
       } else {
-        const newActivity = new PostActivities();
-        Object.assign(newActivity, {
-          post_id: id,
-          user_id: userId,
-          action: body.type,
-        });
-        await this.em.save(PostActivities, newActivity);
+        post.bookmarks_count =
+          post.bookmarks_count === 0 ? 0 : post.bookmarks_count - 1;
+      }
+    } else {
+      const newActivity = new PostActivities();
+      Object.assign(newActivity, {
+        post_id: id,
+        user_id: userId,
+        action: body.type,
+      });
+      await this.em.save(PostActivities, newActivity);
+      if (body.type === PostActivitiesActions.LIKE) {
+        post.like_count++;
+      } else {
+        post.bookmarks_count++;
       }
     }
+
+    await this.em.save(Posts, post);
 
     return {
       ...post,
@@ -167,6 +176,7 @@ export class PostsService {
             first_name: true,
             last_name: true,
             avatar: true,
+            username: true,
           },
         })
         .catch(() => {

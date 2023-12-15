@@ -50,7 +50,6 @@ export class TagsController {
   }
 
   @Get('/popular')
-  @UseGuards(JwtAuthGuard)
   async getPopular(
     @Query('search') searchStr: string,
     @ExtractUserId('id') userId: string,
@@ -59,7 +58,6 @@ export class TagsController {
   }
 
   @Get('/trends')
-  @UseGuards(JwtAuthGuard)
   async getTrends(): Promise<Tags[]> {
     return await this.tagsService.getTrends();
   }
