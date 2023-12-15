@@ -23,8 +23,11 @@ export class PostsController {
 
   @Get()
   @UseGuards(JwtAuthGuard)
-  async getAll(@Query('tagId') tagId: string): Promise<Posts[]> {
-    return await this.postsService.findAll(tagId);
+  async getAll(
+    @Query('tagId') tagId: string,
+    @ExtractUserId('id') userId: string,
+  ): Promise<Posts[]> {
+    return await this.postsService.findAll(tagId, userId);
   }
 
   @Get('/public-all')

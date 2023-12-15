@@ -41,12 +41,11 @@ export class PostsService {
     protected readonly em: EntityManager,
   ) {}
 
-  async findAll(tagId: string): Promise<Posts[]> {
+  async findAll(tagId: string, userId: string): Promise<Posts[]> {
     const queryBuilder = this.em
       .createQueryBuilder(Posts, 'post')
       .leftJoin('post.tag', 'tag')
       .leftJoin('post.author', 'author')
-      .leftJoin('post.activities', 'activities')
       .addSelect([
         'tag.id',
         'tag.name',
@@ -59,19 +58,15 @@ export class PostsService {
         'author.first_name',
         'author.last_name',
         'author.avatar',
-      ])
-      .addSelect([
-        'activities.id',
-        'activities.user_id',
-        'activities.post_id',
-        'activities.action',
       ]);
 
     if (tagId) {
       queryBuilder.where('tag.id = :tagId', { tagId });
     }
 
-    return queryBuilder.getMany();
+    const posts: Posts[] = await queryBuilder.getMany();
+
+    return this.buildActivitiesResponse(posts, userId);
   }
 
   async getAllPublic(): Promise<Posts[]> {
@@ -205,5 +200,43 @@ export class PostsService {
 
     delete newPost.author.posts;
     return await this.em.save(Posts, newPost);
+  }
+
+  async buildActivitiesResponse(posts: Posts[], userId: string) {
+    const activities: {
+      id: string;
+      activities_action: PostActivitiesActions;
+    }[] = await this.em
+      .createQueryBuilder(Posts, 'post')
+      .leftJoin(
+        PostActivities,
+        'activities',
+        'post.id = activities.post_id::uuid',
+      )
+      .select('activities.action', 'activities_action')
+      .addSelect('post.id', 'id')
+      .where('activities.action IS NOT NULL')
+      .andWhere('activities.user_id = :userId', { userId })
+      .getRawMany();
+
+    return posts.map((content) => {
+      let modifiedContent = {
+        ...content,
+        is_bookmarked: false,
+        is_liked: false,
+      };
+
+      activities.forEach((action) => {
+        if (action.id === content.id) {
+          if (action.activities_action === PostActivitiesActions.BOOKMARK) {
+            modifiedContent.is_bookmarked = true;
+          } else {
+            modifiedContent.is_liked = true;
+          }
+        }
+      });
+
+      return modifiedContent;
+    });
   }
 }
