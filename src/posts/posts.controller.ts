@@ -13,6 +13,7 @@ import { Posts } from './entities/posts.entity';
 import { CreatePostDto } from './dtos/create-post.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { ExtractUserId } from '../common/decorators/extract-user-id.decorator';
+import { AddActivitiesPostDto } from './dtos/add-activities-post.dto';
 
 @Controller('posts')
 export class PostsController {
@@ -30,6 +31,16 @@ export class PostsController {
   @UseGuards(JwtAuthGuard)
   async getOne(@Param('id') id: string): Promise<Posts> {
     return this.postsService.getOne(id);
+  }
+
+  @Post('activities/:id')
+  @UseGuards(JwtAuthGuard)
+  async addActivities(
+    @Param('id') id: string,
+    @ExtractUserId() userId: string,
+    @Body() body: AddActivitiesPostDto,
+  ): Promise<Posts> {
+    return this.postsService.addActivities(id, userId, body);
   }
 
   @Post()
