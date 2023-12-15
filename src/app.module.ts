@@ -7,6 +7,7 @@ import { UsersModule } from './users/users.module';
 import { DatabaseModule } from './database/database.module';
 import { TagsModule } from './tags/tags.module';
 import { PostsModule } from './posts/posts.module';
+import { ChatsModule } from './chats/chats.module';
 import { CommentsModule } from './comments/comments.module';
 
 @Module({
@@ -20,6 +21,7 @@ import { CommentsModule } from './comments/comments.module';
     TagsModule,
     PostsModule,
     CommentsModule,
+    ChatsModule,
   ],
   controllers: [],
   providers: [],

@@ -14,6 +14,7 @@ import { Posts } from '../../posts/entities/posts.entity';
 import { Tags } from '../../tags/entities/tags.entity';
 import { UserSetting } from './user-setting.entity';
 import { Comments } from '../../comments/entities/comments.entity';
+import { Chat } from '../../chats/entities/chat.entity';
 
 @Entity('user')
 export class User {
@@ -77,6 +78,10 @@ export class User {
 
   @ManyToMany(() => Tags, (tag: Tags) => tag.followers)
   follow_tags: Tags[];
+
+  @ManyToMany(() => Chat, (Chat) => Chat.conversators)
+  @JoinColumn()
+  chats: Chat[];
 
   @CreateDateColumn()
   @ApiProperty({
