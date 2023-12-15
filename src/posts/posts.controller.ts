@@ -13,6 +13,7 @@ import { Posts } from './entities/posts.entity';
 import { CreatePostDto } from './dtos/create-post.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { ExtractUserId } from '../common/decorators/extract-user-id.decorator';
+import { AddActivitiesPostDto } from './dtos/add-activities-post.dto';
 
 @Controller('posts')
 export class PostsController {
@@ -22,8 +23,16 @@ export class PostsController {
 
   @Get()
   @UseGuards(JwtAuthGuard)
-  async getAll(@Query('tagId') tagId: string): Promise<Posts[]> {
-    return await this.postsService.findAll(tagId);
+  async getAll(
+    @Query('tagId') tagId: string,
+    @ExtractUserId('id') userId: string,
+  ): Promise<Posts[]> {
+    return await this.postsService.findAll(tagId, userId);
+  }
+
+  @Get('/public-all')
+  async getAllPublic(): Promise<Posts[]> {
+    return await this.postsService.getAllPublic();
   }
 
   @Get('/:id')
@@ -32,12 +41,22 @@ export class PostsController {
     return this.postsService.getOne(id);
   }
 
+  @Post('activities/:id')
+  @UseGuards(JwtAuthGuard)
+  async addActivities(
+    @Param('id') id: string,
+    @ExtractUserId() userId: string,
+    @Body() body: AddActivitiesPostDto,
+  ): Promise<Posts> {
+    return this.postsService.addActivities(id, userId, body);
+  }
+
   @Post()
   @UseGuards(JwtAuthGuard)
   async create(
     @ExtractUserId() id: string,
     @Body() createPostDto: CreatePostDto,
-  ) {
+  ): Promise<Posts> {
     return this.postsService.create(id, createPostDto);
   }
 }

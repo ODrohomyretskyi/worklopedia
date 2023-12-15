@@ -8,6 +8,7 @@ import { BlockList } from '../users/entities/block-list.entity';
 import { Posts } from '../posts/entities/posts.entity';
 import { Tags } from '../tags/entities/tags.entity';
 import { Comments } from '../comments/entities/comments.entity';
+import { PostActivities } from '../posts/entities/post-activities.entity';
 
 @Module({
   imports: [
@@ -21,7 +22,7 @@ import { Comments } from '../comments/entities/comments.entity';
         password: configService.get<string>('TYPEORM_PASSWORD'),
         synchronize: false,
         logging: configService.get<boolean>('TYPEORM_LOGGING'),
-        entities: [User, Tokens, UserSetting, BlockList,Posts, Tags, Comments],
+        entities: [User, Tokens, UserSetting, BlockList,Posts, Tags, Comments, PostActivities],
         // ssl:
         //   configService.get<string>('APP_STATUS') === 'dev' ||
         //   configService.get<string>('APP_STATUS') === 'prod',
