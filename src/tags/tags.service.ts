@@ -71,6 +71,10 @@ export class TagsService {
     return (await this.buildTagResponse(tags, userId)) as TagResponceDto[];
   }
 
+  async getPublicPopular(): Promise<Tags[]> {
+    return await this.tagsRepository.find({ take: 5 });
+  }
+
   async getTrends(): Promise<Tags[]> {
     return this.tagsRepository
       .createQueryBuilder('tags')
