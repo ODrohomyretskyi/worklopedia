@@ -27,6 +27,12 @@ export class PostsController {
     return await this.postsService.findAll(tagId);
   }
 
+  @Get('/public-all')
+  @UseGuards(JwtAuthGuard)
+  async getAllPublic(): Promise<Posts[]> {
+    return await this.postsService.getAllPublic();
+  }
+
   @Get('/:id')
   @UseGuards(JwtAuthGuard)
   async getOne(@Param('id') id: string): Promise<Posts> {
@@ -48,7 +54,7 @@ export class PostsController {
   async create(
     @ExtractUserId() id: string,
     @Body() createPostDto: CreatePostDto,
-  ) {
+  ): Promise<Posts> {
     return this.postsService.create(id, createPostDto);
   }
 }

@@ -74,6 +74,17 @@ export class PostsService {
     return queryBuilder.getMany();
   }
 
+  async getAllPublic(): Promise<Posts[]> {
+    return this.em.find(Posts, {
+      ...this.generateSelectForPostResponse,
+      relations: {
+        author: true,
+        tag: true,
+      },
+      take: 10,
+    });
+  }
+
   async getOne(id: string): Promise<Posts> {
     const post: Posts | null = await this.em
       .findOne(Posts, {
@@ -191,6 +202,7 @@ export class PostsService {
     user.posts = [...user.posts, newPost];
 
     await this.em.save(User, user);
+
     delete newPost.author.posts;
     return await this.em.save(Posts, newPost);
   }
