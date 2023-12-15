@@ -28,7 +28,6 @@ export class PostsController {
   }
 
   @Get('/public-all')
-  @UseGuards(JwtAuthGuard)
   async getAllPublic(): Promise<Posts[]> {
     return await this.postsService.getAllPublic();
   }
