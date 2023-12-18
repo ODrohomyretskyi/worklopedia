@@ -59,7 +59,8 @@ export class PostsService {
         'author.last_name',
         'author.avatar',
         'author.username',
-      ]);
+      ])
+      .orderBy('post.createdAt', 'DESC');
 
     if (tagId) {
       queryBuilder.where('tag.id = :tagId', { tagId });
