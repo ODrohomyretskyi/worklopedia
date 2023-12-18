@@ -49,21 +49,35 @@ export class CommentsService {
       throw new NotFoundException(errorMessages.USER_NOT_FOUND);
     }
 
-    if (createCommentDto.entity_type === EntityType.POST) {
-      const post = await this.postsRepository.findOne({
+    if (createCommentDto.reply_id) {
+      const comment: Comments = await this.commentsRepository.findOne({
         where: {
-          id: createCommentDto.entity_id,
+          id: createCommentDto.reply_id,
         },
       });
 
-      if (!post) {
-        throw new NotFoundException(errorMessages.POST_NOT_FOUND);
+      if (!comment) {
+        throw new NotFoundException(errorMessages.COMMENT_NOT_FOUND);
       }
+    }
+
+    const post: Posts =
+      createCommentDto.entity_type === EntityType.POST &&
+      (await this.postsRepository.findOne({
+        where: {
+          id: createCommentDto.entity_id,
+        },
+      }));
+
+    if (createCommentDto.entity_type === EntityType.POST && !post) {
+      throw new NotFoundException(errorMessages.POST_NOT_FOUND);
     }
 
     Object.assign(comment, createCommentDto);
     comment.author = author;
+    post.comments_count = post.comments_count + 1;
 
+    await this.postsRepository.save(post);
     return await this.commentsRepository.save(comment);
   }
 
@@ -74,11 +88,6 @@ export class CommentsService {
       },
       relations: { author: true },
       select: {
-        id: true,
-        content: true,
-        like_count: true,
-        entity_id: true,
-        reply_id: true,
         author: {
           id: true,
           first_name: true,
