@@ -16,4 +16,5 @@ export const errorMessages = {
   INCORRECT_REQUEST: 'error:Bad Request',
   TOKEN_NOT_EXIST: 'error: Token not exist',
   SOMETHING_WENT_WRONG: 'error: Something went wrong',
+  COMMENT_NOT_FOUND: 'error: Comment not found',
 };
